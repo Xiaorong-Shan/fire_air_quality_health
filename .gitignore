@@ -1,6 +1,12 @@
+data/*.DS_Store
 data/*.csv
 data/*.rds
 data/*.RDS
+data/cmaq/*
+data/*/*.zip
+data/*/*.gz
+data/*/*.csv
 results/*.rds
 results/*.RDS
 .Rproj.user
+.Rhistory

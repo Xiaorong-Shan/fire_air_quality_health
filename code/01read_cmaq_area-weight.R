@@ -203,7 +203,8 @@ cmaq_county_ny <-
   rbindlist( fill = TRUE) %>%
   melt( id.vars = c( 'year', 'name', 'fire', 'geoid', 'state_name')) %>%
   dcast.data.table( year + variable + name + geoid + state_name ~ fire,
-                    value.var = 'value') 
+                    value.var = 'value') %>%
+  na.omit()
 
 # read in the files and aggregate to monitor locations
 cmaq_monitors_ny <- 
@@ -216,14 +217,43 @@ cmaq_monitors_ny <-
   dcast.data.table( year + variable + name + mID + ID + POC ~ fire,
                     value.var = 'value') 
 
-# calculate differences from fires
-cmaq_state_ny[, fire_diff := firefire - fire_0firefire]
-cmaq_county_ny[, fire_diff := firefire - fire_0firefire]
-cmaq_monitors_ny[, fire_diff := firefire - fire_0firefire]
+# set names
+setnames( cmaq_state_ny, c( 'firefire', 'fire_0firefire'), c( 'withfire', 'nofire'))
+setnames( cmaq_county_ny, c( 'firefire', 'fire_0firefire'), c( 'withfire', 'nofire'))
+setnames( cmaq_monitors_ny, c( 'firefire', 'fire_0firefire'), c( 'withfire', 'nofire'))
 
+# calculate differences from fires
+cmaq_state_ny[, fire_diff := withfire - nofire]
+cmaq_county_ny[, fire_diff := withfire - nofire]
+cmaq_monitors_ny[, fire_diff := withfire - nofire]
+
+# create date column
+cmaq_state_ny[, date := as.Date( as.numeric( gsub( '^X', '', variable)) - 1,    
+                                 origin = as.Date( paste0( year, "-01-01")))]
+cmaq_county_ny[, date := as.Date( as.numeric( gsub( '^X', '', variable)) - 1,    
+                                  origin = as.Date( paste0( year, "-01-01")))]
+cmaq_monitors_ny[, date := as.Date( as.numeric( gsub( '^X', '', variable)) - 1,    
+                                    origin = as.Date( paste0( year, "-01-01")))]
+
+## ====================================================================== ##
+# merge monitor cmaq with monitor data
+## ====================================================================== ##
+# create column of pollutant name to match cmaq convention
+AQS_PM_O3[ `Parameter Code` == 44201, name := 'daily8hrmax']
+AQS_PM_O3[ `Parameter Code` == 88101, name := 'dailyavgs']
+AQS_PM_O3[ , date := as.Date( `Date Local`)]
+cmaq_monitors_ny[ , ID := as.character( ID)]
+
+
+cmaq_monitors_ny_aqs <- 
+  merge( cmaq_monitors_ny,
+         AQS_PM_O3,
+         by = c( 'mID', 'ID', 'name', 'POC', 'date'))
+
+## ====================================================================== ##
 # save the output
+## ====================================================================== ##
 fwrite( cmaq_state_ny, 'data/cmaq_processed/cmaq_state_ny.csv')
 fwrite( cmaq_county_ny, 'data/cmaq_processed/cmaq_county_ny.csv')
-fwrite( cmaq_monitors_ny, 'data/cmaq_processed/cmaq_monitors_ny.csv')
-
+fwrite( cmaq_monitors_ny_aqs, 'data/cmaq_processed/cmaq_monitors_ny.csv')
 
