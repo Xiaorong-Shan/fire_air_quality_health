@@ -121,6 +121,8 @@ AQS_PM_O3 <- AQS_dataset( states = 'New York')
 AQS_locs <- unique( AQS_PM_O3, by = c( 'mID', 'ID', 'POC')) %>%
   st_as_sf()
 
+# save the spatial data
+save( AQS_locs, file = 'data/epa_aqs/aqs_sites_ny.RData')
 
 ## ====================================================================== ##
 ### import information about cmaq files
