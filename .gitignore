@@ -4,6 +4,7 @@ data/*.rds
 data/*.RDS
 data/*.RData
 data/*/*.RData
+data/*/*.dat
 data/cmaq/*
 data/*/*.zip
 data/*/*.gz
