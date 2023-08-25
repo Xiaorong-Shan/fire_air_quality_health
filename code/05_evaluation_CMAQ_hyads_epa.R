@@ -12,7 +12,7 @@ library( ggplot2)
 library( viridis)
 
 ## ====================================================================== ##
-### EPA monitor data with O3 concentration
+###  EPA monitor data with PM2.5 concentration
 ## ====================================================================== ##
 p4s <- "+proj=aea +lat_1=20 +lat_2=60 +lat_0=40 +lon_0=-96 +x_0=0 +y_0=0 +ellps=GRS80 +datum=NAD83 +units=m"
 
@@ -62,7 +62,12 @@ ggplot() +
         legend.position = "bottom")
 
 
+## ====================================================================== ##
+### CMAQ data with PM2.5 concentration
+## ====================================================================== ##
+cmaq.df <- read.csv("C:/Users/xshan2/OneDrive - George Mason University - O365 Production/GMU_PhD/01_Research/01_2019fall_Campfire/Wilkins_CMAQ_output/cmaq_processed/cmaq_county_ny.csv")
 
+cmaq_2018.df <- cmaq.df[cmaq.df$date >= start_date & cmaq.df$date <= end_date, ]
 
 
 
