@@ -97,29 +97,14 @@ read_fn <-
   }
 
 cmaq_pm25_ny <- 
-  lapply( files_all,
+    lapply( files_all,
           read_fn,
           raster_fill = latlon_raster.r) %>%
-  rbindlist( fill = TRUE) %>%
-  melt(id.vars = c('year', 'name', 'fire', 'x', 'y')) %>%
-  dcast.data.table(year + variable + name + x + y ~ fire, value.var = 'value')
+  rbindlist( fill = TRUE)
 
-# set names
-setnames( cmaq_pm25_ny, c( 'firefire', 'fire_0firefire'), c( 'withfire', 'nofire'))
-
-# calculate differences from fires
-cmaq_pm25_ny[, fire_diff := withfire - nofire]
-
-# create date column
-cmaq_pm25_ny[, date := as.Date( as.numeric( gsub( '^X', '', variable)) - 1,    
-                                 origin = as.Date( paste0( year, "-01-01")))]
-
-
-
-
-####################################
-##try another way
-####################################
+## ====================================================================== ##
+### make the fire and no fire raster
+## ====================================================================== ##
 cmaq_pm25_fire <- cmaq_pm25_test[cmaq_pm25_test$fire == "firefire", ]
 cmaq_pm25_fire.n <- cmaq_pm25_fire[, -c("year", "name", "fire")]
 
