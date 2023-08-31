@@ -1,7 +1,8 @@
 ## ====================================================================== ##
-### This script will evaluate temporal and spatial correlation among CMAQ,
+### This script will evaluate temporal and spatial correlation among CMAQ
 ### hyads and epa monitors for 2018 Campfire event in New York
 ### Period: Nov. 23rd 2018 to Nov. 28th 2018
+### Noted: you should get the CMAQ result in grid value from 05 script first
 ## ====================================================================== ##
 library( data.table)
 library( sf)
