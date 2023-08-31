@@ -1,7 +1,7 @@
 library(ncdf4)
 library(data.table)
 
-cmaq_loc <- '/Users/xshan2/Library/CloudStorage/OneDrive-GeorgeMasonUniversity-O365Production/GMU_PhD/01_Research/01_2019fall_Campfire/Wilkins_CMAQ_output/CMAQ/2018'
+cmaq_loc <- '/home/xshan2/HAQ_LAB/xshan2/R_Code/Campfire/Wilkins_CMAQ_output/CMAQ/2018'
 
 
 #create an empty raster for grids with crs descriotion
