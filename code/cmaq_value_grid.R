@@ -114,31 +114,8 @@ cmaq_pm25_ny[, fire_diff := withfire - nofire]
 cmaq_pm25_ny[, date := as.Date( as.numeric( gsub( '^X', '', variable)) - 1,    
                                  origin = as.Date( paste0( year, "-01-01")))]
 
-#etract the dates (camfire pick period from data frame)
-start_date <- as.Date("2018-11-23")
-end_date <- as.Date("2018-11-28")
-epa_aqs_2018.df <- epa_aqs.df[epa_aqs.df$Date.Local >= start_date & epa_aqs.df$Date.Local<= end_date, ]
 
-cmaq_pm25_campfire <- cmaq_pm25_ny[cmaq_pm25_ny$date >= start_date & cmaq_pm25_ny$date <= end_date, ]
-cmaq_campfire <- cmaq_pm25_campfire[, .(x, y, nofire, withfire, fire_diff, date)]
 
-cmaq_campfire[, date_numeric := as.integer(as.Date(date))]
-
-cmaq_campfire.n <- cmaq_campfire[, date := NULL]
-
-cmaq_campfire.r <- rasterFromXYZ(cmaq_campfire.n,
-                               crs=p4s)
-
-cmaq_campfire.r[is.na( cmaq_campfire.r)] <- 0
-
-# create sf polygon object
-cmaq_campfire.sp <- rasterToPolygons( cmaq_campfire.r)
-cmaq_campfire.sf <- st_as_sf( cmaq_campfire.sp)
-
-# Convert date_numeric column back to date format
-cmaq_campfire.sf$date <- as.Date(cmaq_campfire.sf$date_numeric, origin = "1970-01-01")
-
-cmaq_campfire.sf$date_numeric <- NULL
 
 ####################################
 ##try another way
