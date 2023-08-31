@@ -11,6 +11,7 @@ library(raster)
 library(USAboundaries)
 library(sf)
 library(ggplot2)
+library(viridis)
 
 cmaq_loc <- '/home/xshan2/HAQ_LAB/xshan2/R_Code/Campfire/Wilkins_CMAQ_output/CMAQ/2018'
 
@@ -60,9 +61,6 @@ latlon_raster.r <- expand.grid( lon = lon,
 ## ====================================================================== ##
 ### apply the reader function
 ## ====================================================================== ##
-# create mask over NY state
-ny_bounds <- USAboundaries::us_states( states = 'NY')
-
 read_fn <- 
   function( f, 
             raster_fill = latlon_raster.r){
@@ -137,15 +135,9 @@ cmaq_pm25_fire_date.m <- cmaq_pm25_fire.m[cmaq_pm25_fire.m$date >= start_date & 
 
 #################################################
 # create the plot
-
-ny_states <- states[states$statefp == "36", ]
-
+# create mask over NY state
+ny_states <- USAboundaries::us_states( states = 'NY') %>%  st_transform(crs = st_crs(cmaq_pm25_fire.sf))
 ny_bbox <- st_bbox(ny_states)
-
-#extract hyads exposure value for NY county
-
-counties <- USAboundaries::us_counties()
-
 
   ggplot( ) +
   # add state coundaries
@@ -169,8 +161,8 @@ counties <- USAboundaries::us_counties()
   # create panels for each day
   facet_wrap( . ~ date, ncol = 3) +
   # set boundaries over NY
-  # coord_sf( xlim = c( -130, -70), ylim = c( 25, 50)) +
   #coord_sf( xlim = c( -79.76212, -71.85621), ylim = c( 40.50244, 45.01468)) +
+  coord_sf( xlim = c( 1404152.8, 2070532.4), ylim = c( 293577.8, 795892.4)) +
   # set thematic elements
   theme_minimal() +
   labs(title = "CMAQ PM2.5 Concentration in New York (2018)",
