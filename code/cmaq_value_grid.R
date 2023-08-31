@@ -160,11 +160,10 @@ counties <- USAboundaries::us_counties()
            inherit.aes = FALSE, fill=NA) +
   # change the fill & color scale
   scale_fill_viridis( 
-    limits = c( 0, 4), 
-    breaks = c( 0, 2, 4),
-    labels = c( '0', '2', '4'),
+    limits = c( 0, 50), 
+    breaks = c( 0, 25, 50),
+    labels = c( '0', '25', '50'),
     oob = scales::squish) +
-  
   # be sure to show 0 in the color scales
   expand_limits( fill = 0, color = 0) +
   # create panels for each day
@@ -174,14 +173,14 @@ counties <- USAboundaries::us_counties()
   #coord_sf( xlim = c( -79.76212, -71.85621), ylim = c( 40.50244, 45.01468)) +
   # set thematic elements
   theme_minimal() +
-  labs(title = "Hyads Campfire exposure in New York (2018)",
-       fill = expression("Unitless"),
+  labs(title = "CMAQ PM2.5 Concentration in New York (2018)",
+       color = expression("PM2.5 ["*mu*g/m^3*"]"),
        x = NULL,
-       y = NULL)+
-  theme( axis.title = element_text( size = 12),
-         axis.text = element_blank(),
-         strip.text = element_text( size = 12),
-         legend.position = 'bottom')
+       y = NULL) +
+  theme(axis.title = element_text( size = 8),
+        axis.text = element_blank(),
+        strip.text = element_text( size = 8),
+        legend.position = "bottom")
 
 
 
