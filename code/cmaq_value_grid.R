@@ -127,4 +127,14 @@ cmaq_pm25_fire.m <-
         variable.name = 'date',
         value.name = 'fire_pm25')
 
-cmaq_pm25_fire.sf <- st_as_sf(cmaq_pm25_fire.m)
+# Convert date_numeric column back to date format
+cmaq_pm25_fire.m[, date := as.Date( as.numeric( gsub( '^X', '', date)) - 1,    
+                                 origin = as.Date( paste0( 2018, "-01-01")))]
+
+
+#etract the dates (camfire pick period from data frame)
+start_date <- as.Date("2018-11-23")
+end_date <- as.Date("2018-11-28")
+cmaq_pm25_fire_date.m <- cmaq_pm25_fire.m[cmaq_pm25_fire.m$date >= start_date & cmaq_pm25_fire.m$date <= end_date, ]
+
+cmaq_pm25_fire.sf <- st_as_sf(cmaq_pm25_fire_date.m)
