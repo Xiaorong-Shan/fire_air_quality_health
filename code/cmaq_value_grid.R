@@ -165,7 +165,7 @@ ny_bbox <- st_bbox(ny_states)
   coord_sf( xlim = c( 1404152.8, 2070532.4), ylim = c( 293577.8, 795892.4)) +
   # set thematic elements
   theme_minimal() +
-  labs(title = "CMAQ PM2.5 Concentration in New York (2018)",
+  labs(title = "CMAQ PM2.5 Concentration (with fire) in New York (2018)",
        fill = expression("PM2.5 ["*mu*g/m^3*"]"),
        x = NULL,
        y = NULL) +
