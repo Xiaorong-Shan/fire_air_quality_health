@@ -9,6 +9,8 @@ library(data.table)
 library(dplyr)
 library(raster)
 library(USAboundaries)
+library(sf)
+library(ggplot2)
 
 cmaq_loc <- '/home/xshan2/HAQ_LAB/xshan2/R_Code/Campfire/Wilkins_CMAQ_output/CMAQ/2018'
 
