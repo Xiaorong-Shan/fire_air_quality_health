@@ -63,8 +63,7 @@ ny_bounds <- USAboundaries::us_states( states = 'NY')
 
 read_fn <- 
   function( f, 
-            raster_fill = latlon_raster.r,
-            ny_bounds){
+            raster_fill = latlon_raster.r){
     print( f)
     
     
