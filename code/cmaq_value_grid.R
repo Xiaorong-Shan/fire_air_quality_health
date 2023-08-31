@@ -133,18 +133,59 @@ start_date <- as.Date("2018-11-23")
 end_date <- as.Date("2018-11-28")
 cmaq_pm25_fire_date.m <- cmaq_pm25_fire.m[cmaq_pm25_fire.m$date >= start_date & cmaq_pm25_fire.m$date <= end_date, ]
 
+## ====================================================================== ##
+### make the no fire raster
+## ====================================================================== ##
+  cmaq_pm25_ny_nofire <- cmaq_pm25_ny[cmaq_pm25_ny$fire == "fire_0firefire", ]
+  cmaq_pm25_nofire.dt <- cmaq_pm25_ny_nofire[, -c("year", "name", "fire")]
+  
+  #resolution: 12km
+  cmaq_pm25_nofire.r <- rasterFromXYZ(cmaq_pm25_nofire.dt,
+                                    crs=p4s)
+  
+  # create sf polygon object
+  cmaq_pm25_nofire.sp <- rasterToPolygons( cmaq_pm25_nofire.r)
+  cmaq_pm25_nofire.sf <- st_as_sf( cmaq_pm25_nofire.sp)
+  
+  # melt back to long format
+  cmaq_pm25_nofire.m <-
+    as.data.table( cmaq_pm25_nofire.sf) %>%
+    melt( id.vars = 'geometry',
+          variable.name = 'date',
+          value.name = 'nofire_pm25')
+  
+  # Convert date_numeric column back to date format
+  cmaq_pm25_nofire.m[, date := as.Date( as.numeric( gsub( '^X', '', date)) - 1,    
+                                      origin = as.Date( paste0( 2018, "-01-01")))]
+  
+  
+  #etract the dates (camfire pick period from data frame)
+  start_date <- as.Date("2018-11-23")
+  end_date <- as.Date("2018-11-28")
+  cmaq_pm25_nofire_date.m <- cmaq_pm25_nofire.m[cmaq_pm25_nofire.m$date >= start_date & cmaq_pm25_nofire.m$date <= end_date, ]
+  
 #################################################
-# create the plot
+#merge the fire and no fire into one table, calculate the difference between fire and nofire
+cmaq_pm25_total <- cmaq_pm25_fire_date.m
+cmaq_pm25_total$nofire_pm25 <- cmaq_pm25_nofire_date.m$nofire_pm25
+cmaq_pm25_total$fire_diff <- cmaq_pm25_total$fire_pm25 - cmaq_pm25_total$nofire_pm25
+
+summary(cmaq_pm25_total)
+
+## ====================================================================== ##
+### creat the plot
+## ====================================================================== ##
+#################################################
 # create mask over NY state
 ny_states <- USAboundaries::us_states( states = 'NY') %>%  st_transform(crs = st_crs(cmaq_pm25_fire.sf))
 ny_bbox <- st_bbox(ny_states)
 
+#################################################
+# cmaq with fire
   ggplot( ) +
-  # add state coundaries
-  
-  # add the disperser grid
-  geom_sf( data = cmaq_pm25_fire_date.m,
-    aes( fill = fire_pm25   , geometry = geometry),
+  # add the cmaq withfire grid
+  geom_sf( data = cmaq_pm25_total,
+    aes( fill = fire_pm25, geometry = geometry),
     alpha = .75, color = NA) +
   geom_sf( data = ny_states,
            aes( geometry = geometry),
@@ -174,47 +215,12 @@ ny_bbox <- st_bbox(ny_states)
         strip.text = element_text( size = 12),
         legend.position = "bottom")
 
-## ====================================================================== ##
-  ### make the no fire raster
-  ## ====================================================================== ##
-  cmaq_pm25_ny_nofire <- cmaq_pm25_ny[cmaq_pm25_ny$fire == "fire_0firefire", ]
-  cmaq_pm25_nofire.dt <- cmaq_pm25_ny_nofire[, -c("year", "name", "fire")]
-  
-  #resolution: 12km
-  cmaq_pm25_nofire.r <- rasterFromXYZ(cmaq_pm25_nofire.dt,
-                                    crs=p4s)
-  
-  # create sf polygon object
-  cmaq_pm25_nofire.sp <- rasterToPolygons( cmaq_pm25_nofire.r)
-  cmaq_pm25_nofire.sf <- st_as_sf( cmaq_pm25_nofire.sp)
-  
-  # melt back to long format
-  cmaq_pm25_nofire.m <-
-    as.data.table( cmaq_pm25_nofire.sf) %>%
-    melt( id.vars = 'geometry',
-          variable.name = 'date',
-          value.name = 'nofire_pm25')
-  
-  # Convert date_numeric column back to date format
-  cmaq_pm25_nofire.m[, date := as.Date( as.numeric( gsub( '^X', '', date)) - 1,    
-                                      origin = as.Date( paste0( 2018, "-01-01")))]
-  
-  
-  #etract the dates (camfire pick period from data frame)
-  start_date <- as.Date("2018-11-23")
-  end_date <- as.Date("2018-11-28")
-  cmaq_pm25_nofire_date.m <- cmaq_pm25_nofire.m[cmaq_pm25_nofire.m$date >= start_date & cmaq_pm25_nofire.m$date <= end_date, ]
-  
-  #################################################
-  # create the plot
- 
-  
+#################################################
+# cmaq without fire
   ggplot( ) +
-    # add state coundaries
-    
-    # add the disperser grid
-    geom_sf( data = cmaq_pm25_nofire_date.m,
-             aes( fill = nofire_pm25   , geometry = geometry),
+    # add the cmaq nofire grid
+    geom_sf( data = cmaq_pm25_total,
+             aes( fill = nofire_pm25, geometry = geometry),
              alpha = .75, color = NA) +
     geom_sf( data = ny_states,
              aes( geometry = geometry),
@@ -244,13 +250,37 @@ ny_bbox <- st_bbox(ny_states)
           strip.text = element_text( size = 12),
           legend.position = "bottom")
 
-#merge the fire and no fire into one table, calculate the difference between fire and nofire
-cmaq_pm25_total <- cmaq_pm25_fire_date.m
-cmaq_pm25_total$nofire_pm25 <- cmaq_pm25_nofire_date.m$nofire_pm25
-cmaq_pm25_total$fire_diff <- cmaq_pm25_total$fire_pm25 - cmaq_pm25_total$nofire_pm25
-
-
-
-
-
-
+#################################################
+# cmaq difference between fire & no fire
+  ggplot( ) +
+    # add the cmaq nofire grid
+    geom_sf( data = cmaq_pm25_total,
+             aes( fill = fire_diff, geometry = geometry),
+             alpha = .75, color = NA) +
+    geom_sf( data = ny_states,
+             aes( geometry = geometry),
+             color = 'black',
+             inherit.aes = FALSE, fill=NA) +
+    # change the fill & color scale
+    scale_fill_viridis( 
+      limits = c( -0.1, 0.1), 
+      breaks = c( -0,1, 0, 0.1),
+      labels = c( '-0,1', '0', '0.1'),
+      oob = scales::squish) +
+    # be sure to show 0 in the color scales
+    expand_limits( fill = 0, color = 0) +
+    # create panels for each day
+    facet_wrap( . ~ date, ncol = 3) +
+    # set boundaries over NY
+    #coord_sf( xlim = c( -79.76212, -71.85621), ylim = c( 40.50244, 45.01468)) +
+    coord_sf( xlim = c( 1404152.8, 2070532.4), ylim = c( 293577.8, 795892.4)) +
+    # set thematic elements
+    theme_minimal() +
+    labs(title = "CMAQ PM2.5 Concentration (difference between fire & no fire) in New York (2018)",
+         fill = expression("PM2.5 ["*mu*g/m^3*"]"),
+         x = NULL,
+         y = NULL) +
+    theme(axis.title = element_text( size = 12),
+          axis.text = element_blank(),
+          strip.text = element_text( size = 12),
+          legend.position = "bottom")
