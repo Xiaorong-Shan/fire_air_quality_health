@@ -105,11 +105,11 @@ cmaq_pm25_ny <-
 ## ====================================================================== ##
 ### make the fire and no fire raster
 ## ====================================================================== ##
-cmaq_pm25_fire <- cmaq_pm25_test[cmaq_pm25_test$fire == "firefire", ]
-cmaq_pm25_fire.n <- cmaq_pm25_fire[, -c("year", "name", "fire")]
+cmaq_pm25_ny_fire <- cmaq_pm25_ny[cmaq_pm25_ny$fire == "firefire", ]
+cmaq_pm25_fire.dt <- cmaq_pm25_ny_fire[, -c("year", "name", "fire")]
 
 #resolution: 12km
-cmaq_pm25_fire.r <- rasterFromXYZ(cmaq_pm25_fire.n,
+cmaq_pm25_fire.r <- rasterFromXYZ(cmaq_pm25_fire.dt,
                                  crs=p4s)
 
 # create sf polygon object
