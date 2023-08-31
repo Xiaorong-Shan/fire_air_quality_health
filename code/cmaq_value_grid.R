@@ -166,12 +166,12 @@ ny_bbox <- st_bbox(ny_states)
   # set thematic elements
   theme_minimal() +
   labs(title = "CMAQ PM2.5 Concentration in New York (2018)",
-       color = expression("PM2.5 ["*mu*g/m^3*"]"),
+       fill = expression("PM2.5 ["*mu*g/m^3*"]"),
        x = NULL,
        y = NULL) +
-  theme(axis.title = element_text( size = 8),
+  theme(axis.title = element_text( size = 12),
         axis.text = element_blank(),
-        strip.text = element_text( size = 8),
+        strip.text = element_text( size = 12),
         legend.position = "bottom")
 
 
