@@ -244,7 +244,10 @@ ny_bbox <- st_bbox(ny_states)
           strip.text = element_text( size = 12),
           legend.position = "bottom")
 
-
+#merge the fire and no fire into one table, calculate the difference between fire and nofire
+cmaq_pm25_total <- cmaq_pm25_fire_date.m
+cmaq_pm25_total$nofire_pm25 <- cmaq_pm25_nofire_date.m$nofire_pm25
+cmaq_pm25_total$fire_diff <- cmaq_pm25_total$fire_pm25 - cmaq_pm25_total$nofire_pm25
 
 
 
