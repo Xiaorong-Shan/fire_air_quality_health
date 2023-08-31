@@ -135,4 +135,57 @@ start_date <- as.Date("2018-11-23")
 end_date <- as.Date("2018-11-28")
 cmaq_pm25_fire_date.m <- cmaq_pm25_fire.m[cmaq_pm25_fire.m$date >= start_date & cmaq_pm25_fire.m$date <= end_date, ]
 
-cmaq_pm25_fire.sf <- st_as_sf(cmaq_pm25_fire_date.m)
+#################################################
+# create the plot
+
+ny_states <- states[states$statefp == "36", ]
+
+ny_bbox <- st_bbox(ny_states)
+
+#extract hyads exposure value for NY county
+
+counties <- USAboundaries::us_counties()
+
+
+  ggplot( ) +
+  # add state coundaries
+  
+  # add the disperser grid
+  geom_sf( data = cmaq_pm25_fire_date.m,
+    aes( fill = fire_pm25   , geometry = geometry),
+    alpha = .75, color = NA) +
+  geom_sf( data = ny_states,
+           aes( geometry = geometry),
+           color = 'black',
+           inherit.aes = FALSE, fill=NA) +
+  # change the fill & color scale
+  scale_fill_viridis( 
+    limits = c( 0, 4), 
+    breaks = c( 0, 2, 4),
+    labels = c( '0', '2', '4'),
+    oob = scales::squish) +
+  
+  # be sure to show 0 in the color scales
+  expand_limits( fill = 0, color = 0) +
+  # create panels for each day
+  facet_wrap( . ~ date, ncol = 3) +
+  # set boundaries over NY
+  # coord_sf( xlim = c( -130, -70), ylim = c( 25, 50)) +
+  #coord_sf( xlim = c( -79.76212, -71.85621), ylim = c( 40.50244, 45.01468)) +
+  # set thematic elements
+  theme_minimal() +
+  labs(title = "Hyads Campfire exposure in New York (2018)",
+       fill = expression("Unitless"),
+       x = NULL,
+       y = NULL)+
+  theme( axis.title = element_text( size = 12),
+         axis.text = element_blank(),
+         strip.text = element_text( size = 12),
+         legend.position = 'bottom')
+
+
+
+
+
+
+
