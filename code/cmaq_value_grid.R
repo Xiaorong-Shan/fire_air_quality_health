@@ -10,10 +10,42 @@ library(dplyr)
 library(raster)
 library(USAboundaries)
 
-p4s <- "+proj=aea +lat_1=20 +lat_2=60 +lat_0=40 +lon_0=-96 +x_0=0 +y_0=0 +ellps=GRS80 +datum=NAD83 +units=m"
-
 cmaq_loc <- '/home/xshan2/HAQ_LAB/xshan2/R_Code/Campfire/Wilkins_CMAQ_output/CMAQ/2018'
 
+
+# list all the CMAQ files
+files_all <- list.files( cmaq_loc,
+                         # pattern = 'daily8hrmax.*.ncf',
+                         full.names = TRUE)
+
+# create crs from file information
+f_in <- nc_open(files_all[1])
+xorig <- ncatt_get(f_in, varid = 0, 'XORIG')$value
+yorig <- ncatt_get(f_in, varid = 0, 'YORIG')$value
+xcent <- ncatt_get(f_in, varid = 0, 'XCENT')$value
+ycent <- ncatt_get(f_in, varid = 0, 'YCENT')$value
+ncols <- ncatt_get(f_in, varid = 0, 'NCOLS')$value
+nrows <- ncatt_get(f_in, varid = 0, 'NROWS')$value
+xcell <- ncatt_get(f_in, varid = 0, 'XCELL')$value
+ycell <- ncatt_get(f_in, varid = 0, 'XCELL')$value
+p_alp <- ncatt_get(f_in, varid = 0, 'P_ALP')$value
+p_bet <- ncatt_get(f_in, varid = 0, 'P_BET')$value
+
+# create p4s
+#https://forum.cmascenter.org/t/equates-grid-coordinates/3018/3
+# p4s <- "+proj=lcc +lat_1=33 +lat_2=45 +lat_0=40 +lon_0=-97 +a=6370000 +b=6370000"
+p4s <- paste( '+proj=lcc',
+              paste0( 'lat_1=', p_alp),
+              paste0( 'lat_2=', p_bet),
+              paste0( 'lat_0=', ycent),
+              paste0( 'lon_0=', xcent),
+              'a=6370000 +b=6370000',
+              sep = ' +')
+
+# Describe grids from grid description
+#define lat & lon in meters
+lon <- seq( from = xorig, by = xcell, length.out = ncols)
+lat <- seq( from = yorig, by = ycell, length.out = nrows)
 
 #create an empty raster for grids with crs descriotion
 latlon_raster.r <- expand.grid( lon = lon,
@@ -23,6 +55,10 @@ latlon_raster.r <- expand.grid( lon = lon,
   rasterFromXYZ( 
     crs = p4s) %>% brick( nl = 365)
 
+## ====================================================================== ##
+### apply the reader function
+## ====================================================================== ##
+# create mask over NY state
 ny_bounds <- USAboundaries::us_states( states = 'NY')
 
 # Transform the NY bounds to the CRS of the raster if they are different
