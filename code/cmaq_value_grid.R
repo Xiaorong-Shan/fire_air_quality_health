@@ -1,5 +1,16 @@
+## ====================================================================== ##
+### This script reads CMAQ reslut in grid (12km)
+### fire, nofire, difference
+### Period: Nov. 23rd 2018 to Nov. 28th 2018
+## ====================================================================== ##
+
 library(ncdf4)
 library(data.table)
+library(dplyr)
+library(raster)
+library(USAboundaries)
+
+p4s <- "+proj=aea +lat_1=20 +lat_2=60 +lat_0=40 +lon_0=-96 +x_0=0 +y_0=0 +ellps=GRS80 +datum=NAD83 +units=m"
 
 cmaq_loc <- '/home/xshan2/HAQ_LAB/xshan2/R_Code/Campfire/Wilkins_CMAQ_output/CMAQ/2018'
 
