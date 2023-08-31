@@ -61,18 +61,6 @@ latlon_raster.r <- expand.grid( lon = lon,
 # create mask over NY state
 ny_bounds <- USAboundaries::us_states( states = 'NY')
 
-# Transform the NY bounds to the CRS of the raster if they are different
-if(st_crs(ny_bounds) != crs(latlon_raster.r)) {
-  ny_bounds <- st_transform(ny_bounds, crs(latlon_raster.r))
-}
-
-# Convert the sf object to a raster mask
-ny_mask <- rasterize(ny_bounds, latlon_raster.r)
-
-# Mask the raster to New York State boundaries
-masked_raster <- mask(latlon_raster.r, ny_mask)
-
-
 read_fn <- 
   function( f, 
             raster_fill = latlon_raster.r,
