@@ -86,21 +86,45 @@ end_date <- as.Date("2018-11-28")
 epa_aqs_2018.df <- epa_aqs.df[epa_aqs.df$Date.Local >= start_date & epa_aqs.df$Date.Local<= end_date, ]
 
 cmaq_pm25_campfire <- cmaq_pm25_ny[cmaq_pm25_ny$date >= start_date & cmaq_pm25_ny$date <= end_date, ]
+cmaq_campfire <- cmaq_pm25_campfire[, .(x, y, nofire, withfire, fire_diff, date)]
 
-# Assuming a resolution of 1200 (this can be adjusted)
-resolution <- 36000
+cmaq_campfire[, date_numeric := as.integer(as.Date(date))]
 
-# Compute the grid cell boundaries
-cmaq_pm25_ny[, .(year, variable, name, date, nofire, withfire, fire_diff,
-                 xmin = x - (resolution / 2), 
-                 xmax = x + (resolution / 2), 
-                 ymin = y - (resolution / 2), 
-                 ymax = y + (resolution / 2))]
+cmaq_campfire.n <- cmaq_campfire[, date := NULL]
 
-# Convert the table to an sf object with polygons
-cmaq_sf <- st_as_sf(cmaq_pm25_ny, 
-                    st_bbox(c("xmin", "ymin", "xmax", "ymax")), 
-                    crs = p4s)  # Replace with appropriate CRS
+cmaq_campfire.r <- rasterFromXYZ(cmaq_campfire.n,
+                               crs=p4s)
 
-# If you want a single MultiPolygon object
-multipolygon <- st_union(cmaq_sf)
+cmaq_campfire.r[is.na( cmaq_campfire.r)] <- 0
+
+# create sf polygon object
+cmaq_campfire.sp <- rasterToPolygons( cmaq_campfire.r)
+cmaq_campfire.sf <- st_as_sf( cmaq_campfire.sp)
+
+# Convert date_numeric column back to date format
+cmaq_campfire.sf$date <- as.Date(cmaq_campfire.sf$date_numeric, origin = "1970-01-01")
+
+cmaq_campfire.sf$date_numeric <- NULL
+
+####################################
+##try another way
+####################################
+cmaq_pm25_fire <- cmaq_pm25_test[cmaq_pm25_test$fire == "firefire", ]
+cmaq_pm25_fire.n <- cmaq_pm25_fire[, -c("year", "name", "fire")]
+
+#resolution: 12km
+cmaq_pm25_fire.r <- rasterFromXYZ(cmaq_pm25_fire.n,
+                                 crs=p4s)
+
+# create sf polygon object
+cmaq_pm25_fire.sp <- rasterToPolygons( cmaq_pm25_fire.r)
+cmaq_pm25_fire.sf <- st_as_sf( cmaq_pm25_fire.sp)
+
+# melt back to long format
+cmaq_pm25_fire.m <-
+  as.data.table( cmaq_pm25_fire.sf) %>%
+  melt( id.vars = 'geometry',
+        variable.name = 'date',
+        value.name = 'fire_pm25')
+
+cmaq_pm25_fire.sf <- st_as_sf(cmaq_pm25_fire.m)
