@@ -62,15 +62,77 @@ ggplot() +
         strip.text = element_text( size = 8),
         legend.position = "bottom")
 
+## ====================================================================== ##
+### Purple Air data with PM2.5 concentration
+## ====================================================================== ##
+
+samplefile1<-read.csv("/Users/xshan2/Library/CloudStorage/OneDrive-GeorgeMasonUniversity-O365Production/GMU_PhD/01_Research/01_2019fall_Campfire/Daniel_single_point/EPA_disperseR_covariance/ad_viz_plotval_data.csv")
+
+purple_air_data <- data.table(matrix(nrow = nrow(samplefile1), ncol = 5))
+purple_air_data <- setnames(purple_air_data,c("Longitude","Latitude","uID","date","pm25"))
+purple_air_data$Longitude <- samplefile1$SITE_LONGITUDE
+purple_air_data$Latitude <- samplefile1$SITE_LATITUDE
+purple_air_data$uID <- as.character(samplefile1$Site.ID)
+purple_air_data$date<-as.Date(samplefile1$Date,format = "%Y-%m-%d")
+purple_air_data$pm25<-samplefile1$Daily.Mean.PM2.5.Concentration
+
+# select purple_air data within the campfire range.
+date_range <- seq(from=as.Date("2018-11-23"),to=as.Date("2018-11-28"),by="day") #set up the list
+purple_air_data <- purple_air_data[purple_air_data$date %in% date_range,] #subset purple_air data within campfire period
+purple_air_data.sf <- st_as_sf(purple_air_data, 
+                               coords = c( 'Longitude', 'Latitude'),
+                               crs = 'WGS84')
 
 ## ====================================================================== ##
-### CMAQ data with PM2.5 concentration
+### CMAQ data Calculate Error Metrics between withfire and nofire
 ## ====================================================================== ##
-cmaq.df <- read.csv("C:/Users/xshan2/OneDrive - George Mason University - O365 Production/GMU_PhD/01_Research/01_2019fall_Campfire/Wilkins_CMAQ_output/cmaq_processed/cmaq_county_ny.csv")
 
-cmaq_2018.df <- cmaq.df[cmaq.df$date >= start_date & cmaq.df$date <= end_date, ]
+cmaq_pm25_total <- st_read("/Users/xshan2/Library/CloudStorage/OneDrive-GeorgeMasonUniversity-O365Production/GMU_PhD/01_Research/01_2019fall_Campfire/Wilkins_CMAQ_output/CMAQ/shp_cmaq/cmaq_pm25_total.shp")
+
+cmaq_pm25_total.sf <- st_as_sf(cmaq_pm25_total)
+cmaq_pm25_total.sf <- st_transform(cmaq_pm25_total.sf, st_crs(ny_state))
 
 
 
+## ====================================================================== ##
+### Error Metrics between purple air and CMAQ
+## ====================================================================== ##
+joined_purple_air_hyads <- st_join(purple_air_data.sf, cmaq_pm25_total.sf, left = TRUE)%>%
+  subset(date.x == date.y)
 
+#Renaming the date column if needed
+names(joined_purple_air_hyads)[names(joined_purple_air_hyads) == "date.x"] <- "date"
+
+joined_purple_air_hyads$date.y <- NULL
+
+# Calculate errors for each point (replace with your actual column names)
+joined_purple_air_hyads <- joined_purple_air_hyads %>%
+  mutate(error_withfire = pm25 - fire_pm25)
+
+# Calculate error metrics with fire
+MAE <- mean(abs(joined_purple_air_hyads$error_withfire), na.rm = TRUE)
+MSE <- mean(joined_purple_air_hyads$error_withfire^2, na.rm = TRUE)
+RMSE <- sqrt(MSE)
+MBD <- mean(joined_purple_air_hyads$error_withfire, na.rm = TRUE)
+
+# Print the metrics
+cat("Mean Absolute Error (MAE):", MAE, "\n")
+cat("Mean Squared Error (MSE):", MSE, "\n")
+cat("Root Mean Squared Error (RMSE):", RMSE, "\n")
+cat("Mean Bias Deviation (MBD):", MBD, "\n")
+
+# Calculate error metrics withoutfire
+joined_purple_air_hyads <- joined_purple_air_hyads %>%
+  mutate(error_nofire = pm25 - nofire_pm25)
+
+MAE <- mean(abs(joined_purple_air_hyads$error_nofire), na.rm = TRUE)
+MSE <- mean(joined_purple_air_hyads$error_nofire^2, na.rm = TRUE)
+RMSE <- sqrt(MSE)
+MBD <- mean(joined_purple_air_hyads$error_nofire, na.rm = TRUE)
+
+# Print the metrics
+cat("Mean Absolute Error (MAE):", MAE, "\n")
+cat("Mean Squared Error (MSE):", MSE, "\n")
+cat("Root Mean Squared Error (RMSE):", RMSE, "\n")
+cat("Mean Bias Deviation (MBD):", MBD, "\n")
 
