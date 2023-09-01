@@ -182,21 +182,24 @@ ny_bbox <- st_bbox(ny_states)
 
 #################################################
 # cmaq with fire
-  ggplot( ) +
+cmaq_fire <- 
+ggplot( ) +
   # add the cmaq withfire grid
   geom_sf( data = cmaq_pm25_total,
-    aes( fill = fire_pm25, geometry = geometry),
-    alpha = .75, color = NA) +
+           aes( fill = fire_pm25, geometry = geometry),
+           alpha = .75, color = NA) +
   geom_sf( data = ny_states,
            aes( geometry = geometry),
            color = 'black',
            inherit.aes = FALSE, fill=NA) +
   # change the fill & color scale
-  scale_fill_viridis( 
-    limits = c( 0, 50), 
-    breaks = c( 0, 25, 50),
-    labels = c( '0', '25', '50'),
-    oob = scales::squish) +
+  scale_fill_gradient(name = expression("PM2.5 ["*mu*g/m^3*"]"),
+                      low = "blue",
+                      high = "red",
+                      limits = c(0, 6),
+                      breaks = c(0, 3, 6),
+                      labels = c('0', '3', '6'),
+                      oob = scales::squish) +
   # be sure to show 0 in the color scales
   expand_limits( fill = 0, color = 0) +
   # create panels for each day
@@ -207,7 +210,6 @@ ny_bbox <- st_bbox(ny_states)
   # set thematic elements
   theme_minimal() +
   labs(title = "CMAQ PM2.5 Concentration (with fire) in New York (2018)",
-       fill = expression("PM2.5 ["*mu*g/m^3*"]"),
        x = NULL,
        y = NULL) +
   theme(axis.title = element_text( size = 12),
@@ -215,72 +217,85 @@ ny_bbox <- st_bbox(ny_states)
         strip.text = element_text( size = 12),
         legend.position = "bottom")
 
+
+ggsave( '/Users/xshan2/Library/CloudStorage/OneDrive-GeorgeMasonUniversity-O365Production/GMU_PhD/01_Research/01_2019fall_Campfire/Wilkins_CMAQ_output/figures/cmaq_fire.png', cmaq_fire,
+        width = 14, height = 5, scale = 1.2)
 #################################################
 # cmaq without fire
+cmaq_nofire <-
   ggplot( ) +
-    # add the cmaq nofire grid
-    geom_sf( data = cmaq_pm25_total,
-             aes( fill = nofire_pm25, geometry = geometry),
-             alpha = .75, color = NA) +
-    geom_sf( data = ny_states,
-             aes( geometry = geometry),
-             color = 'black',
-             inherit.aes = FALSE, fill=NA) +
-    # change the fill & color scale
-    scale_fill_viridis( 
-      limits = c( 0, 50), 
-      breaks = c( 0, 25, 50),
-      labels = c( '0', '25', '50'),
-      oob = scales::squish) +
-    # be sure to show 0 in the color scales
-    expand_limits( fill = 0, color = 0) +
-    # create panels for each day
-    facet_wrap( . ~ date, ncol = 3) +
-    # set boundaries over NY
-    #coord_sf( xlim = c( -79.76212, -71.85621), ylim = c( 40.50244, 45.01468)) +
-    coord_sf( xlim = c( 1404152.8, 2070532.4), ylim = c( 293577.8, 795892.4)) +
-    # set thematic elements
-    theme_minimal() +
-    labs(title = "CMAQ PM2.5 Concentration (without fire) in New York (2018)",
-         fill = expression("PM2.5 ["*mu*g/m^3*"]"),
-         x = NULL,
-         y = NULL) +
-    theme(axis.title = element_text( size = 12),
-          axis.text = element_blank(),
-          strip.text = element_text( size = 12),
-          legend.position = "bottom")
+  # add the cmaq withfire grid
+  geom_sf( data = cmaq_pm25_total,
+           aes( fill = nofire_pm25, geometry = geometry),
+           alpha = .75, color = NA) +
+  geom_sf( data = ny_states,
+           aes( geometry = geometry),
+           color = 'black',
+           inherit.aes = FALSE, fill=NA) +
+  # change the fill & color scale
+  scale_fill_gradient(name = expression("PM2.5 ["*mu*g/m^3*"]"),
+                      low = "blue",
+                      high = "red",
+                      limits = c(0, 6),
+                      breaks = c(0, 3, 6),
+                      labels = c('0', '3', '6'),
+                      oob = scales::squish) +
+  # be sure to show 0 in the color scales
+  expand_limits( fill = 0, color = 0) +
+  # create panels for each day
+  facet_wrap( . ~ date, ncol = 3) +
+  # set boundaries over NY
+  #coord_sf( xlim = c( -79.76212, -71.85621), ylim = c( 40.50244, 45.01468)) +
+  coord_sf( xlim = c( 1404152.8, 2070532.4), ylim = c( 293577.8, 795892.4)) +
+  # set thematic elements
+  theme_minimal() +
+  labs(title = "CMAQ PM2.5 Concentration (without fire) in New York (2018)",
+       x = NULL,
+       y = NULL) +
+  theme(axis.title = element_text( size = 12),
+        axis.text = element_blank(),
+        strip.text = element_text( size = 12),
+        legend.position = "bottom")
+
+ggsave( '/Users/xshan2/Library/CloudStorage/OneDrive-GeorgeMasonUniversity-O365Production/GMU_PhD/01_Research/01_2019fall_Campfire/Wilkins_CMAQ_output/figures/cmaq_nofire.png', cmaq_nofire,
+        width = 14, height = 5, scale = 1.2)
 
 #################################################
 # cmaq difference between fire & no fire
-  ggplot( ) +
-    # add the cmaq nofire grid
-    geom_sf( data = cmaq_pm25_total,
-             aes( fill = fire_diff, geometry = geometry),
-             alpha = .75, color = NA) +
-    geom_sf( data = ny_states,
-             aes( geometry = geometry),
-             color = 'black',
-             inherit.aes = FALSE, fill=NA) +
-    # change the fill & color scale
-    scale_fill_viridis( 
-      limits = c( -0.1, 0.1), 
-      breaks = c( -0,1, 0, 0.1),
-      labels = c( '-0,1', '0', '0.1'),
-      oob = scales::squish) +
-    # be sure to show 0 in the color scales
-    expand_limits( fill = 0, color = 0) +
-    # create panels for each day
-    facet_wrap( . ~ date, ncol = 3) +
-    # set boundaries over NY
-    #coord_sf( xlim = c( -79.76212, -71.85621), ylim = c( 40.50244, 45.01468)) +
-    coord_sf( xlim = c( 1404152.8, 2070532.4), ylim = c( 293577.8, 795892.4)) +
-    # set thematic elements
-    theme_minimal() +
-    labs(title = "CMAQ PM2.5 Concentration (difference between fire & no fire) in New York (2018)",
-         fill = expression("PM2.5 ["*mu*g/m^3*"]"),
-         x = NULL,
-         y = NULL) +
-    theme(axis.title = element_text( size = 12),
-          axis.text = element_blank(),
-          strip.text = element_text( size = 12),
-          legend.position = "bottom")
+cmaq_fire_diff <-
+ggplot( ) +
+  # add the cmaq nofire grid
+  geom_sf( data = cmaq_pm25_total,
+           aes( fill = fire_diff, geometry = geometry),
+           alpha = .75, color = NA) +
+  geom_sf( data = ny_states,
+           aes( geometry = geometry),
+           color = 'black',
+           inherit.aes = FALSE, fill=NA) +
+  # change the fill & color scale
+  scale_fill_gradient(name = expression("PM2.5 ["*mu*g/m^3*"]"),
+                      low = "blue",
+                      high = "red",
+                      limits = c( 0, 0.5), 
+                      breaks = c( 0, 0.25, 0.5),
+                      labels = c( '0', '0.25', '0.5'),
+                      oob = scales::squish) +
+  # be sure to show 0 in the color scales
+  expand_limits( fill = 0, color = 0) +
+  # create panels for each day
+  facet_wrap( . ~ date, ncol = 3) +
+  # set boundaries over NY
+  #coord_sf( xlim = c( -79.76212, -71.85621), ylim = c( 40.50244, 45.01468)) +
+  coord_sf( xlim = c( 1404152.8, 2070532.4), ylim = c( 293577.8, 795892.4)) +
+  # set thematic elements
+  theme_minimal() +
+  labs(title = "CMAQ PM2.5 Concentration (difference between fire & no fire) in New York (2018)",
+       x = NULL,
+       y = NULL) +
+  theme(axis.title = element_text( size = 12),
+        axis.text = element_blank(),
+        strip.text = element_text( size = 12),
+        legend.position = "bottom")
+
+ggsave( '/Users/xshan2/Library/CloudStorage/OneDrive-GeorgeMasonUniversity-O365Production/GMU_PhD/01_Research/01_2019fall_Campfire/Wilkins_CMAQ_output/figures/cmaq_fire_diff.png', cmaq_fire_diff,
+        width = 14, height = 5, scale = 1.2)
